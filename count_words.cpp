@@ -6,6 +6,13 @@
 #include <unordered_set>
 #include <vector>
 
+const std::string DATA_FILE = "data/words.txt";
+
+std::string gen_key(char letter, unsigned int pos)
+{
+  return std::string(1, letter) + std::to_string(pos);
+}
+
 void display(std::unordered_map<std::string, int> &map)
 {
   using pair_t = std::pair<std::string, int>;
@@ -24,57 +31,69 @@ void display(std::unordered_map<std::string, int> &map)
   }
 }
 
-bool has_duplicates(std::string& word) {
+bool has_duplicates(std::string &word)
+{
   std::unordered_set<char> characters;
-  for (unsigned int i = 0; i < word.size(); i++) {
-    if (characters.count(word[i]) > 0) {
+  for (unsigned int i = 0; i < word.size(); i++)
+  {
+    if (characters.count(word[i]) > 0)
       return true;
-    }
     characters.insert(word[i]);
   }
   return false;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+  bool display_words = false;
+  bool display_letter_positions = false;
+  for (unsigned int i = 0; i < argc; i++)
+  {
+    switch (argv[i][1])
+    {
+    case 'w':
+      display_words = true;
+      break;
+    case 'l':
+      display_letter_positions = true;
+      break;
+    }
+  }
   std::vector<std::string> words;
   std::unordered_map<std::string, int> letter_pos_count;
-  std::ifstream infile("words.txt");
+  std::ifstream infile(DATA_FILE);
   std::string word;
   while (infile >> word)
   {
     int word_length = word.length();
     if (word_length == 5 && word[4] != 's')
     {
-
-      // std::cout << word << std::endl;
       for (unsigned int i = 0; i < word_length; i++)
       {
         words.push_back(word);
-        std::string key = std::string(1, word[i]) + std::to_string(i + 1);
+        std::string key = gen_key(word[i], i + 1);
         letter_pos_count[key]++;
       }
     }
   }
   int num_words = words.size();
-  // for (auto [letter_pos, count] : letter_pos_count)
-  // {
-  //   letter_pos_count[letter_pos] = count / num_words;
-  // }
-  display(letter_pos_count);
+  if (display_letter_positions)
+    display(letter_pos_count);
   std::unordered_map<std::string, int> word_scores;
   for (auto word : words)
   {
-    if (has_duplicates(word)) continue;
+    if (has_duplicates(word))
+      continue;
     int word_length = word.length();
     int score = 0;
     for (unsigned int i = 0; i < word_length; i++)
     {
-      std::string key = std::string(1, word[i]) + std::to_string(i + 1);
+      std::string key = gen_key(word[i], i + 1);
       score += letter_pos_count[key];
     }
     word_scores[word] = score;
   }
-  display(word_scores);
+  if (display_words)
+    display(word_scores);
   return 0;
 }
